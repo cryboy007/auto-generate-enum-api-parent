@@ -18,7 +18,7 @@
   <dependency>
     <artifactId>auto-generate-enum-api-spring</artifactId>
     <groupId>pw.jonwinters.common</groupId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.1</version>
   </dependency>
 ```
 
