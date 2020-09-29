@@ -21,7 +21,6 @@
         <module>auto-generate-enum-api-model</module>
     </modules>
 
-
     <dependencyManagement>
         <dependencies>
             <dependency>
