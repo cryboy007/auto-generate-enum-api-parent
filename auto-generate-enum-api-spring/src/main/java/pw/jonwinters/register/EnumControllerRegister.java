@@ -7,11 +7,15 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
 import pw.jonwinters.config.AutoGenerateEnumConfig;
 import pw.jonwinters.generate.EnumControllerGenerator;
+
+import java.util.List;
 
 public class EnumControllerRegister implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
 
@@ -30,15 +34,7 @@ public class EnumControllerRegister implements BeanDefinitionRegistryPostProcess
      * @return
      */
     private AutoGenerateEnumConfig prepareConfig() {
-        AutoGenerateEnumConfig config = new AutoGenerateEnumConfig();
-        if (environment == null) {
-            throw new IllegalStateException("Make sure spring context's environment has been set properly.");
-        }
-        config.setBaseScanPackage(environment.getProperty("enum.baseScanPackage"));
-        config.setBasePath(environment.getProperty("enum.basePath"));
-        config.setDebug(Boolean.parseBoolean(environment.getProperty("enum.debug")));
-        config.setDebugPath(environment.getProperty("enum.debugPath"));
-        return config;
+        return Binder.get(environment).bind("enums", Bindable.of(AutoGenerateEnumConfig.class)).orElseThrow(IllegalStateException::new);
     }
 
     /**
