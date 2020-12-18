@@ -8,8 +8,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AutoGenerateEnumConfig {
 
     /**
-     * all generated-url's base-path
-     * full path will be like '/{base-path}/xxxx'
+     * the base-path of all generated-url
+     * full path will be liked '/{base-path}/xxxx'
      * if given value is null or null , it won't work
      */
     private String basePath = "/debugs";

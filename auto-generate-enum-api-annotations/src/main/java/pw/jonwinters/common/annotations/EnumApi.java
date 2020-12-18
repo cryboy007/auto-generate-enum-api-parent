@@ -20,7 +20,7 @@ public @interface EnumApi {
     /**
      * enum's url
      */
-    String value() default "";
+    String value() default "/default";
 
 
     /**
