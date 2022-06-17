@@ -3,6 +3,7 @@ package pw.jonwinters.generate;
 import com.google.common.collect.Lists;
 import javassist.*;
 import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
@@ -58,41 +59,52 @@ public class EnumControllerGenerator {
             throw new IllegalStateException("Make sure you have prepared the properly config");
         }
         List<Class<?>> generateControllerClazz = Lists.newArrayList();
-
+        //扫描EnumApi的class
         Set<Class<?>> enumClazz = candidateEnumScanner.scannerPackages(StringUtils.isEmpty(config.getBaseScanPackage()) ? "" : config.getBaseScanPackage());
 
-        for (Class clazz : enumClazz) {
-            ClassPool classPool = ClassPool.getDefault();
+        //构建枚举swagger
+        CtClass generateController =  generateSwagger(enumClazz);
+        if (config.isDebug()) {
+            generateController.debugWriteFile(config.getDebugPath());
+        }
+        generateControllerClazz.add(generateController.toClass());
+        return generateControllerClazz;
+    }
+
+    private CtClass generateSwagger(Set<Class<?>> enumClazz) throws NotFoundException, CannotCompileException {
+        ClassPool classPool = ClassPool.getDefault();
+
+        classPool.importPackage("pw.jonwinters.common.model");
+        classPool.importPackage("java.util");
+        classPool.importPackage("java.lang");
+        //构建类
+        CtClass generateController = classPool.makeClass("pw.jonwinters.generate.EnumRestController");
+        ClassFile generateControllerClassFile = generateController.getClassFile();
+        ConstPool constPool = generateControllerClassFile.getConstPool();
+        final AnnotationsAttribute annotationsAttribute = generateRestController(classPool, constPool, config.getBasePath());
+        //swagger
+        Annotation swaggerAnnotation = new Annotation("io.swagger.annotations.Api", constPool);
+        ArrayMemberValue memberValue = new ArrayMemberValue(constPool);
+        MemberValue[] memberValues = new MemberValue[]{new StringMemberValue("枚举详情页", constPool)};
+        memberValue.setValue(memberValues);
+        swaggerAnnotation.addMemberValue("tags",memberValue);
+        annotationsAttribute.addAnnotation(swaggerAnnotation);
+        generateControllerClassFile.addAttribute(annotationsAttribute);
+        for (Class<?> clazz : enumClazz) {
             EnumApi enumApi = (EnumApi) clazz.getAnnotation(EnumApi.class);
-
-            classPool.importPackage("pw.jonwinters.common.model");
-            classPool.importPackage("java.util");
-            classPool.importPackage("java.lang");
-            CtClass generateController = classPool.makeClass("pw.jonwinters.generate.EnumRestController_" + clazz.getSimpleName());
-            ClassFile generateControllerClassFile = generateController.getClassFile();
-            ConstPool constPool = generateControllerClassFile.getConstPool();
-
-            //Add annotation RestController and RequestMapping for generated-class
-            AnnotationsAttribute annotationsAttribute = generateRestController(classPool, constPool, config.getBasePath());
-            generateControllerClassFile.addAttribute(annotationsAttribute);
-
-            //Generate method annotation
             CtMethod ctMethod = generateMethod(enumApi, classPool, generateController, constPool, clazz);
             generateController.addMethod(ctMethod);
-
-            if (config.isDebug()) {
-                generateController.debugWriteFile(config.getDebugPath());
-            }
-            generateControllerClazz.add(generateController.toClass());
         }
-
-        return generateControllerClazz;
+        return generateController;
     }
 
     private CtMethod generateMethod(EnumApi enumApi, ClassPool classPool, CtClass controllerCtClass,
                                     ConstPool constPool, Class enumClazz) throws NotFoundException, CannotCompileException {
         AnnotationsAttribute getMappingAttribute = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
         Annotation getMappingAnnotation = new Annotation("org.springframework.web.bind.annotation.GetMapping", constPool);
+        //swagger
+        Annotation swaggerApiOperation = new Annotation("io.swagger.annotations.ApiOperation", constPool);
+
 
         //Set EnumApi value() as path
         String value = enumApi.value();
@@ -104,7 +116,12 @@ public class EnumControllerGenerator {
         ArrayMemberValue arrayMemberValue = new ArrayMemberValue(constPool);
         arrayMemberValue.setValue(memberValues);
         getMappingAnnotation.addMemberValue("value", arrayMemberValue);
-        getMappingAttribute.setAnnotation(getMappingAnnotation);
+        getMappingAttribute.addAnnotation(getMappingAnnotation);
+
+        swaggerApiOperation.addMemberValue("value", new StringMemberValue(enumApi.swaggerApiOperation(),constPool));
+        swaggerApiOperation.addMemberValue("notes", new StringMemberValue(enumApi.swaggerApiOperation(),constPool));
+        swaggerApiOperation.addMemberValue("httpMethod", new StringMemberValue("GET",constPool));
+        getMappingAttribute.addAnnotation(swaggerApiOperation);
 
 
         CtClass enumResponseCtClass = classPool.getCtClass("java.util.List");
@@ -197,9 +214,11 @@ public class EnumControllerGenerator {
 
     /**
      * @return @RestController Attribute
+     * 构建RestController
      */
     private AnnotationsAttribute generateRestController(ClassPool classPool, ConstPool constPool, String basePath) throws NotFoundException {
         String resourcePath = RestController.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        //JBoss或Tomcat等web应用服务器上，ClassPool对象可能会找不到用户定义的类， 因为这些web服务器使用多个类加载器（ClassLoader）来加载类
         classPool.insertClassPath(resourcePath);
 
         AnnotationsAttribute annotationAttribute = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);

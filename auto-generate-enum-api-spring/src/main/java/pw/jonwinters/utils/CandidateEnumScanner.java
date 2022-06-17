@@ -59,7 +59,7 @@ public class CandidateEnumScanner implements ApplicationContextAware, ResourceLo
         return set;
     }
 
-
+    //className 转/
     protected String resolveBasePackage(String basePackage) {
         return ClassUtils.convertClassNameToResourcePath(this.getEnvironment().resolveRequiredPlaceholders(basePackage));
     }

@@ -3,10 +3,7 @@ package pw.jonwinters.register;
 import lombok.SneakyThrows;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.beans.factory.support.*;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.ApplicationContext;
@@ -31,6 +28,8 @@ public class EnumControllerRegister implements BeanDefinitionRegistryPostProcess
     /**
      * We need manually set property cause the processor working for @ConfigurationProperties
      * has not worked in #postProcessBeanDefinitionRegistry stage, for now only support camelcase.
+     * Springboot 2.x新引入的类，负责处理对象与多个ConfigurationPropertySource（属性）之间的绑定，比Environment类好用很多，可以非常方便地进行类型转换，
+     * 以及提供回调方法介入绑定的各个阶段进行深度定制。
      * @return
      */
     private AutoGenerateEnumConfig prepareConfig() {
@@ -48,6 +47,7 @@ public class EnumControllerRegister implements BeanDefinitionRegistryPostProcess
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         enumControllerGenerator.setConfig(prepareConfig());
         for (Class clazz : enumControllerGenerator.generateControllerClazz()) {
+            //交给Spring管理
             BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(clazz);
             GenericBeanDefinition definition = (GenericBeanDefinition) builder.getRawBeanDefinition();
             definition.setBeanClass(clazz);
