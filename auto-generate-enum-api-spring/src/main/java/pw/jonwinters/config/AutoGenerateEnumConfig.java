@@ -37,6 +37,10 @@ public class AutoGenerateEnumConfig {
      */
     private String baseScanPackage = "pw.jonwinters";
 
+    /**
+     * enable
+     */
+    private String enable = "false";
 
 
 }

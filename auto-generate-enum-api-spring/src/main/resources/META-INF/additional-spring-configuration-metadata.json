@@ -35,7 +35,7 @@
     {
       "name": "enum.enable",
       "type": "java.lang.String",
-      "sourceType": "pw.jonwinters.spring.GenerateEnumApiAutoConfiguration",
+      "sourceType": "pw.jonwinters.config.AutoGenerateEnumConfig",
       "description": "enable"
     }
   ]
