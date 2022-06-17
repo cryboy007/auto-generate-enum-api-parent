@@ -1,5 +1,6 @@
 package pw.jonwinters.spring;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -13,6 +14,7 @@ import pw.jonwinters.utils.CandidateEnumScanner;
 @Configuration
 @ComponentScan("pw.jonwinters.*")
 @EnableConfigurationProperties(AutoGenerateEnumConfig.class)
+@ConditionalOnProperty(prefix = "enum", name = "enable", havingValue = "true", matchIfMissing = true)
 public class GenerateEnumApiAutoConfiguration {
 
     @Bean

@@ -31,6 +31,12 @@
       "type": "java.lang.String",
       "sourceType": "pw.jonwinters.config.AutoGenerateEnumConfig",
       "description": "base scan package"
+    },
+    {
+      "name": "enum.enable",
+      "type": "java.lang.String",
+      "sourceType": "pw.jonwinters.spring.GenerateEnumApiAutoConfiguration",
+      "description": "enable"
     }
   ]
 }
