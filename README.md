@@ -1,3 +1,5 @@
+##
+在原有基础上支持swagger
 # AutoGenerateEnumApi 
 
 #### 快速介绍
@@ -43,10 +45,3 @@ enum.debugPath=/tmp
 4.示例工程
 
 https://github.com/jonwinters/auto-generate-enum-api-demo
-
-
-## 后续开发
-
-1.支持Swagger，暂时没精力支持了
-
-2.更加灵活的配置
